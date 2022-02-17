@@ -1,10 +1,10 @@
 import numpy as np
 import cv2
 
-M = np.ones((2,3), dtype=int) * 2
-print(M)
+Mc = np.ones((2, 3), dtype=int) * 2
+print(Mc)
 
-cam = cv2.VideoCapture(0 , cv2.CAP_DSHOW)
+cam = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 
 while True:
     check, frame = cam.read()
