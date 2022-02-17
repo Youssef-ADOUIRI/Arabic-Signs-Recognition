@@ -1,8 +1,8 @@
 import numpy as np
 import cv2
 
-Mc = np.ones((2, 3), dtype=int) * 2
-print(Mc)
+Mcc = np.ones((2, 3), dtype=int) * 2
+print(Mcc)
 
 cam = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 
