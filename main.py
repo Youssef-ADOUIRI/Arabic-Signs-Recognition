@@ -4,7 +4,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 import cv2
 
-Mcc = np.ones((2, 3), dtype=int) * 2
+Mcc = np.ones((2, 3), dtype=int) * 3
 print(Mcc)
 
 cam = cv2.VideoCapture(0, cv2.CAP_DSHOW)
