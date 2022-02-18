@@ -4,10 +4,10 @@ import pandas as pd
 from matplotlib import pyplot as plt
 import cv2
 
-M = np.ones((2,3), dtype=int) * 2
-print(M)
+Mcc = np.ones((2, 3), dtype=int) * 2
+print(Mcc)
 
-cam = cv2.VideoCapture(0 , cv2.CAP_DSHOW)
+cam = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 
 while True:
     check, frame = cam.read()
