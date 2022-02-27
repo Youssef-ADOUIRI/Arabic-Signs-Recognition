@@ -17,6 +17,7 @@ path_test = 'data/unaugmented/416/test'
 IMG_SIZE = 200
 
 #training parameters 
+targetCount = 28 #the arabic alphabet count
 batch_size = 16
 nb_classes =4
 nb_epochs = 5
@@ -49,7 +50,7 @@ def createTrainingData():
         #image
         img_array = cv2.imread(os.path.join(img_path_train,img))
         
-        print(img , ' ', img_array.shape())
+        print(img , ' ', img_array.shape)
         new_array = cv2.resize(img_array, (IMG_SIZE, IMG_SIZE))
         #training_img.append(new_array)
         #label
@@ -118,9 +119,60 @@ for i in range(25):
     
 plt.show()
 
-Y = tf.keras.utils.to_categorical(output)
-
-#model = Sequential(layers.Conv2D(32,(3,3),padding='same',activation=tf.nn.sigmoid,input_shape=()))
-
 # load test data
 createTestingData()
+#Randomize data
+random.shuffle(testing)
+
+#Seprate features and labels
+features_ts = []
+labels_ts = []
+for f , l in testing:
+    features_ts.append(f)
+    labels_ts.append(l)
+
+test_input = np.array(features_ts).reshape(-1 , IMG_SIZE, IMG_SIZE , 3 )
+test_output = np.array(labels_ts)
+
+#convert to flaot
+test_input = test_input.astype('float32')
+#converting value from [0,255] to [0,1]
+test_input /= 255.0
+
+
+Y = tf.keras.utils.to_categorical(output,targetCount)
+Y_ts = tf.keras.utils.to_categorical(test_output,targetCount)
+
+model = Sequential(name='nn')
+model.add(layers.Conv2D(32,(3,3),padding='same',activation=tf.nn.relu,input_shape=(200, 200, 3)))
+model.add(layers.MaxPooling2D((2, 2),strides=(2,2)))
+model.add(layers.Conv2D(128, (3, 3), activation='relu'))
+model.add(layers.MaxPooling2D((2, 2),strides=(2,2)))
+model.add(layers.Conv2D(128, (3, 3), activation='relu'))
+
+#classification layers 
+model.add(layers.Dropout(0.25))
+model.add(layers.Flatten())
+model.add(layers.Dense(128*4, activation='relu'))
+model.add(layers.Dense(targetCount))
+print(model.summary())
+
+#compile
+model.compile(optimizer='adam',
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
+
+print(input.shape , Y.shape)
+print(test_input.shape , Y_ts.shape)
+
+history = model.fit(input, Y, batch_size = batch_size, epochs = 5, validation_data = (test_input, Y_ts))
+
+score = model.evaluate(test_input, Y_ts, verbose = 1 )
+print("Test Score: ", score[0])
+print("Test accuracy: ", score[1])
+plt.plot(history.history['accuracy'], label='accuracy')
+plt.plot(history.history['val_accuracy'], label = 'val_accuracy')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.ylim([0.5, 1])
+plt.legend(loc='lower right')
