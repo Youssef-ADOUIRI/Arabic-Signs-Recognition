@@ -18,11 +18,9 @@ IMG_SIZE = 200
 
 #training parameters 
 targetCount = 28 #the arabic alphabet count
-batch_size = 16
+batch_size = 100
 nb_classes =4
 nb_epochs = 5
-img_rows, img_columns = 200, 200
-img_channel = 3
 nb_filters = 32
 nb_pool = 2
 nb_conv = 3
@@ -143,18 +141,24 @@ test_input /= 255.0
 Y = tf.keras.utils.to_categorical(output,targetCount)
 Y_ts = tf.keras.utils.to_categorical(test_output,targetCount)
 
+#model creation
 model = Sequential(name='nn')
 model.add(layers.Conv2D(32,(3,3),padding='same',activation=tf.nn.relu,input_shape=(200, 200, 3)))
-model.add(layers.MaxPooling2D((2, 2),strides=(2,2)))
-model.add(layers.Conv2D(128, (3, 3), activation='relu'))
-model.add(layers.MaxPooling2D((2, 2),strides=(2,2)))
-model.add(layers.Conv2D(128, (3, 3), activation='relu'))
+model.add(layers.MaxPooling2D(pool_size = (2, 2)))
+model.add(layers.Dropout(0.25))
+model.add(layers.Conv2D(64, (3, 3), activation='relu' ,input_shape=(200, 200, 3) ) )
+model.add(layers.MaxPooling2D(pool_size = (2, 2)))
+model.add(layers.Dropout(0.25))
+model.add(layers.Conv2D(128, (3, 3), activation='relu' ,input_shape=(200, 200, 3) ) )
+model.add(layers.MaxPooling2D(pool_size = (2, 2)))
+model.add(layers.Dropout(0.25))
+
 
 #classification layers 
-model.add(layers.Dropout(0.25))
 model.add(layers.Flatten())
-model.add(layers.Dense(128*4, activation='relu'))
-model.add(layers.Dense(targetCount))
+model.add(layers.Dense(512, activation='relu'))
+model.add(layers.Dropout(0.25))
+model.add(layers.Dense(targetCount, activation='softmax'))
 print(model.summary())
 
 #compile
@@ -165,7 +169,7 @@ model.compile(optimizer='adam',
 print(input.shape , Y.shape)
 print(test_input.shape , Y_ts.shape)
 
-history = model.fit(input, Y, batch_size = batch_size, epochs = 5, validation_data = (test_input, Y_ts))
+history = model.fit(input, Y, batch_size = batch_size, epochs = 12, validation_data = (test_input, Y_ts))
 
 score = model.evaluate(test_input, Y_ts, verbose = 1 )
 print("Test Score: ", score[0])
@@ -176,3 +180,13 @@ plt.xlabel('Epoch')
 plt.ylabel('Accuracy')
 plt.ylim([0.5, 1])
 plt.legend(loc='lower right')
+plt.show()
+
+checkpoint_path = "training_1/cp.ckpt"
+checkpoint_dir = os.path.dirname(checkpoint_path)
+
+# Create a callback that saves the model's weights
+cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_path,
+                                                 save_weights_only=True,
+                                                 verbose=1)
+print('finished')
