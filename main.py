@@ -10,26 +10,32 @@ from PIL import Image
 import random
 import os
 
+
+augmented = True
+
 #preparing the data 
-path_train = 'data/unaugmented/416/train'
-path_test = 'data/unaugmented/416/test'
+if ( augmented ):
+    path_train = 'data/augmented/train'
+    path_test = 'data/augmented/test'
+else:
+    path_train = 'data/unaugmented/416/train'
+    path_test = 'data/unaugmented/416/test'
 #CATEGORIES = ['alf','bae','jim','dal','hae'] # all the arabic signs
 IMG_SIZE = 200
 
+
+
 #training parameters 
 targetCount = 28 #the arabic alphabet count
-batch_size = 100
-nb_classes =4
-nb_epochs = 5
-nb_filters = 32
-nb_pool = 2
-nb_conv = 3
+BATCH_SIZE = 100
+NB_EPOCHS = 5
 
 
 #loading data
 training=[]
 training_img = []
 img_path_train = os.path.join(path_train,'images')
+print(img_path_train)
 lab_path_train = os.path.join(path_train,'labels')
 dir_label_train = os.listdir(lab_path_train)
 
@@ -39,7 +45,7 @@ img_path_test = os.path.join(path_test,'images')
 lab_path_test = os.path.join(path_test,'labels')
 dir_label_test = os.listdir(lab_path_test)
 
-
+DATA_LEN_TRAIN = len(dir_label_train)
 DATA_LEN_TEST = len(dir_label_test)
 
 def createTrainingData():
@@ -48,7 +54,7 @@ def createTrainingData():
         #image
         img_array = cv2.imread(os.path.join(img_path_train,img))
         
-        print(img , ' ', img_array.shape)
+        #print(img , ' ', img_array.shape)
         new_array = cv2.resize(img_array, (IMG_SIZE, IMG_SIZE))
         #training_img.append(new_array)
         #label
@@ -59,6 +65,8 @@ def createTrainingData():
         i += 1
         couple = [new_array , y ]
         training.append(couple)
+        if i == DATA_LEN_TRAIN :
+            break
     print('Loading train_DATA is finshed')
 
 def createTestingData():
@@ -67,7 +75,7 @@ def createTestingData():
         #image
         img_array = cv2.imread(os.path.join(img_path_test,img))
         
-        print(img)
+        #print(img)
         new_array = cv2.resize(img_array, (IMG_SIZE, IMG_SIZE))
         #testing_img.append(new_array)
         #label
@@ -78,13 +86,11 @@ def createTestingData():
         i += 1
         couple = [new_array , y ]
         testing.append(couple)
+        
     print('Loading testing_DATA is finshed')
 
 
 createTrainingData()
-
-
-
 
 #Randomize data
 random.shuffle(training)
@@ -105,6 +111,7 @@ input = input.astype('float32')
 #converting value from [0,255] to [0,1]
 input /= 255.0
 
+'''
 plt.figure(figsize=(10,10))
 for i in range(25):
     plt.subplot(5,5,i+1)
@@ -116,6 +123,8 @@ for i in range(25):
     plt.xlabel(output[i])
     
 plt.show()
+'''
+
 
 # load test data
 createTestingData()
@@ -143,21 +152,24 @@ Y_ts = tf.keras.utils.to_categorical(test_output,targetCount)
 
 #model creation
 model = Sequential(name='nn')
-model.add(layers.Conv2D(32,(3,3),padding='same',activation=tf.nn.relu,input_shape=(200, 200, 3)))
+
+model.add(layers.Conv2D(32,(3,3),activation='relu',input_shape=(200, 200, 3) ) )
 model.add(layers.MaxPooling2D(pool_size = (2, 2)))
-model.add(layers.Dropout(0.25))
 model.add(layers.Conv2D(64, (3, 3), activation='relu' ,input_shape=(200, 200, 3) ) )
 model.add(layers.MaxPooling2D(pool_size = (2, 2)))
-model.add(layers.Dropout(0.25))
 model.add(layers.Conv2D(128, (3, 3), activation='relu' ,input_shape=(200, 200, 3) ) )
 model.add(layers.MaxPooling2D(pool_size = (2, 2)))
-model.add(layers.Dropout(0.25))
-
+'''
+pre_trained_model = tf.keras.applications.DenseNet201(input_shape=(IMG_SIZE,IMG_SIZE, 3), weights='imagenet', include_top=False)
+model.add(pre_trained_model)
+'''
 
 #classification layers 
 model.add(layers.Flatten())
+model.add(layers.Dense(512, activation='sigmoid'))
+model.add(layers.Dropout(0.4))
 model.add(layers.Dense(512, activation='relu'))
-model.add(layers.Dropout(0.25))
+model.add(layers.Dropout(0.4))
 model.add(layers.Dense(targetCount, activation='softmax'))
 print(model.summary())
 
@@ -169,7 +181,7 @@ model.compile(optimizer='adam',
 print(input.shape , Y.shape)
 print(test_input.shape , Y_ts.shape)
 
-history = model.fit(input, Y, batch_size = batch_size, epochs = 12, validation_data = (test_input, Y_ts))
+history = model.fit(input, Y, batch_size = BATCH_SIZE, epochs = NB_EPOCHS, validation_data = (test_input, Y_ts))
 
 score = model.evaluate(test_input, Y_ts, verbose = 1 )
 print("Test Score: ", score[0])
@@ -178,7 +190,7 @@ plt.plot(history.history['accuracy'], label='accuracy')
 plt.plot(history.history['val_accuracy'], label = 'val_accuracy')
 plt.xlabel('Epoch')
 plt.ylabel('Accuracy')
-plt.ylim([0.5, 1])
+plt.ylim([0, 1])
 plt.legend(loc='lower right')
 plt.show()
 
