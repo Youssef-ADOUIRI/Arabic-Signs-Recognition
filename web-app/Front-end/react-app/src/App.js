@@ -2,8 +2,8 @@ import './App.css';
 
 function App() {
   return (
-    <div className="App">
-      <h1>Hello world</h1>
+    <div className="app">
+      <img src="http://localhost:5000/video_feed" alt="Video"/>
     </div>
   );
 }
