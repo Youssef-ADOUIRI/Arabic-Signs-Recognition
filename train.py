@@ -123,7 +123,8 @@ plt.legend(loc='lower right')
 plt.show()
 
 #save the model
-model.save('saved_model/ARS_model.h5')
+#model.save('saved_model/ARS_model.h5')
 print('finished')
+model = tf.keras.models.load_model('C:/Users/YOUSSEF/Documents/GitHub/Arab-Signssaved_model/ARS_model.h5')
 '''
 '''
