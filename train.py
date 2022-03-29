@@ -1,5 +1,5 @@
 import tensorflow as tf
-from tensorflow.keras import layers, models , Sequential
+from tensorflow.keras import layers , Sequential
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
@@ -125,6 +125,6 @@ plt.show()
 #save the model
 #model.save('saved_model/ARS_model.h5')
 print('finished')
-model = tf.keras.models.load_model('C:/Users/YOUSSEF/Documents/GitHub/Arab-Signssaved_model/ARS_model.h5')
+
 '''
 '''
