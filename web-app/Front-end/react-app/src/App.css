@@ -19,13 +19,13 @@ body {
 }
 
 .title {
-  padding-top: 100px;
+  padding-top: 10px;
   text-align: center;
   text-transform: uppercase;
-  font-weight: 600;
-  font-size: 4em;
+  font-weight: 200;
+  font-size: 2em;
   letter-spacing: 0.15rem;
-  color: #fff;
+  color: rgb(0, 0, 0);
 }
 
 label {
@@ -34,12 +34,16 @@ label {
 
 .result-container {
   text-align: center;
-  font-weight: 600;
-  font-size: 4em;
+  font-weight: 100;
+  font-size: 1em;
   letter-spacing: 0.15rem;
   padding: 20px 0 0;
 }
 
 #result {
   color: #000;
+}
+
+.App{
+
 }
