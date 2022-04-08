@@ -8,9 +8,6 @@ x = datetime.datetime.now()
 # Initializing flask app
 app = Flask(__name__)
 
-@app.route('/')
-def index():
-    return render_template('index.js')
 
 def gen(camera):
     while True:
