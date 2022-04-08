@@ -3,10 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tensorflow.keras import models
 
-def import_model():
-    return models.load_model('C:/Users/YOUSSEF/Documents/GitHub/Arab-Signs/saved_model/ARS_REC_model_gray.h5')
 
-model = import_model()
+model = models.load_model('saved_model/ARS_REC_model_gray.h5')
 
 IMG_SIZE = 64
 
@@ -29,13 +27,7 @@ def predict_imgs(image):
     i = np.argmax(prediction)
     return i
 
-#temp 
-'''
-#img = cv2.imread('data/ArASL/taa/TAA (33).jpg')
-img = cv2.imread('Y.jpg')
-nimg = cv2.resize(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), (IMG_SIZE, IMG_SIZE))
-print(CATEGORIES[predict_imgs(nimg)])
-'''
+
 
 vid = cv2.VideoCapture(0)
 
