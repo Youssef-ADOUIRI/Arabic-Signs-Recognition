@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from tensorflow.keras import models
 
 def import_model():
-    return models.load_model('C:/Users/YOUSSEF/Documents/GitHub/Arab-Signs/saved_model/ARS_REC_model.h5')
+    return models.load_model('C:/Users/YOUSSEF/Documents/GitHub/Arab-Signs/saved_model/ARS_REC_model_gray.h5')
 
 model = import_model()
 
@@ -13,14 +13,14 @@ IMG_SIZE = 64
 CATEGORIES = ['ain', 'al', 'aleff', 'bb', 'dal', 'dha', 'dhad', 'fa', 
              'gaaf', 'ghain', 'ha', 'haa', 'jeem', 'kaaf', 'khaa', 'la', 
              'laam', 'meem', 'nun', 'ra', 'saad', 'seen', 'sheen', 'ta', 
-             'taa', 'thaa', 'thal', 'toot', 'waw', 'ya', 'yaa', 'zay'] 
+             'taa', 'thaa', 'thal', 'toot', 'waw', 'ya', 'yaa', 'zay']
 
 
 
 
 def predict_imgs(image):
     l_img = [image]
-    input = np.array(l_img).reshape(-1 , IMG_SIZE, IMG_SIZE , 3 )
+    input = np.array(l_img).reshape(-1 , IMG_SIZE, IMG_SIZE , 1 )
     #convert to flaot
     input = input.astype('float32')
     #converting value from [0,255] to [0,1]
@@ -29,21 +29,23 @@ def predict_imgs(image):
     i = np.argmax(prediction)
     return i
 
-
 #temp 
-img = cv2.imread('YA.JPG')
-nimg = cv2.resize(img, (IMG_SIZE, IMG_SIZE))
+'''
+#img = cv2.imread('data/ArASL/taa/TAA (33).jpg')
+img = cv2.imread('Y.jpg')
+nimg = cv2.resize(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), (IMG_SIZE, IMG_SIZE))
 print(CATEGORIES[predict_imgs(nimg)])
-
+'''
 
 vid = cv2.VideoCapture(0)
-vid.set(cv2.CAP_PROP_FRAME_WIDTH, 64*10)
-vid.set(cv2.CAP_PROP_FRAME_HEIGHT, 64*10)
 
-while(True):
+while(vid.isOpened()):
     ret, frame = vid.read()
+    cv2.rectangle(frame , (300,300) , (100,100), (0,255,0) , 0)
+    crop_img = frame[100:300, 100:300]
+    g_img = cv2.cvtColor(crop_img,cv2.COLOR_BGR2GRAY)
     cv2.imshow('frame', frame)
-    new_array = cv2.resize(frame, (IMG_SIZE, IMG_SIZE))
+    new_array = cv2.resize(g_img, (IMG_SIZE, IMG_SIZE))
     i = predict_imgs(new_array)
     print('Prediction is : ' , CATEGORIES[i])
     # the 'q' button is for quitting
