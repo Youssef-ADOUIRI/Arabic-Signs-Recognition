@@ -10,6 +10,6 @@ Dataset from : https://data.mendeley.com/datasets/y7pckrw6z2/1, CC BY 4.0 licens
 
 Trained by the training_scripts/Arabic_Signs_Rec_gray.ipynb google colab notebook
 
-And Saved in 'saved_model' folder with the '.h5' extention
+The model is saved in 'saved_model' folder with the '.h5' extention
 
-With performance of 95% accuracy
+It has a performance of 92% accuracy
