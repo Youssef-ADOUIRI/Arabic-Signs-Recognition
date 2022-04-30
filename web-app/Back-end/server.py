@@ -1,7 +1,8 @@
-from flask import Flask,Response
+from flask import Flask,Response,request
 from camera import VideoCamera
 import cv2
 from utils import Sign_Recognition as sr
+import requests
 
   
 # Initializing flask app
@@ -32,10 +33,10 @@ def get_prediction():
     # Returning an api for showing in reactjs
 
     r_socket = {'pred_num' : i , 'prediction' : sr.CATEGORIES[index]}
-    print('emit socket is : ' , r_socket)
+    #print('emit socket is : ' , r_socket)
     return r_socket
-  
-      
+
+
 # Running app
 if __name__ == '__main__':
     app.run(debug=True , host='0.0.0.0', port=5000, threaded=True, use_reloader=False)
