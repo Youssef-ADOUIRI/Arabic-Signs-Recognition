@@ -30,24 +30,42 @@ class VideoThread(QThread):
 
 
 class Window(QMainWindow):
+    
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Qt static label demo")
+        self.setWindowTitle("Qt ASR GUI")
         self.setWindowIcon(QIcon('logo192.png'))
         self.display_width = 640
         self.display_height = 480
+
+        #title
+        self.title = QLabel('Arabic Signs Language')
+        self.title.setObjectName('title1')
+
         # create the label that holds the image
         self.image_label = QLabel(self)
+        self.image_label.setObjectName('vid')
         self.image_label.resize(self.display_width, self.display_height)
-        # create a text label
-        self.textLabel = QLabel('Demo')
+        effect = QGraphicsDropShadowEffect(self)
+        effect.setColor(QColor(0x99, 0x99, 0x99))
+        effect.setBlurRadius(10)
+        effect.setXOffset(5)
+        effect.setYOffset(5)
+        self.image_label.setGraphicsEffect(effect)
 
-        # create a vertical box layout and add the two labels
+        # create a text label
+        predi = 'none'
+        self.textLabel = QLabel(predi , self)
+        self.textLabel.setObjectName('predi')
+
+        # create a vertical box layout and add the labels
         wid = QWidget(self)
         self.setCentralWidget(wid)
         vbox = QVBoxLayout()
+        vbox.addWidget(self.title)
         vbox.addWidget(self.image_label)
         vbox.addWidget(self.textLabel)
+  
         # set the vbox layout as the widgets layout
         wid.setLayout(vbox)
         
@@ -60,16 +78,14 @@ class Window(QMainWindow):
 
     @pyqtSlot(np.ndarray)
     def update_image(self, cv_img):
-        """Updates the image_label with a new opencv image"""
         qt_img = self.convert_cv_qt(cv2.rectangle(cv_img , (300,300) , (100,100), (0,255,0) , 0))
         image_to_process = cv_img[100:300, 100:300]
         index = sr.predict_img(image_to_process)
         prediction = sr.CATEGORIES[index]
-        print(prediction)
+        self.textLabel.setText(prediction)
         self.image_label.setPixmap(qt_img)
 
     def convert_cv_qt(self, cv_img):
-        """Convert from an opencv image to QPixmap"""
         rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
         h, w, ch = rgb_image.shape
         bytes_per_line = ch * w
@@ -81,13 +97,40 @@ class Window(QMainWindow):
         self.thread.stop()
         event.accept()
 
+
+
+
+
 if __name__ == "__main__":
     # create pyqt5 app
     App = QApplication(sys.argv)
-  
+    App.setObjectName('app')
+    
+    css = """
+        QWidget{
+            margin: 0;
+            padding: 0;
+        }
+        #vid{
+            background:rgb(255, 255, 255);
+            border-top-left-radius: 30px;
+            border-top-right-radius: 30px;
+        }
+        #title1{
+            text-align: center;
+            font-size: 40px;
+            font-family: Fira Sans;
+        }
+        #predi{
+            text-align: center;
+            font-size: 30px;
+        }
+    """
+    App.setStyleSheet(css)
     # create the instance of our Window
     window = Window()
     window.show()
+    
 
     # start the app
     sys.exit(App.exec())
