@@ -1,10 +1,10 @@
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QPixmap, QColor, QImage
+from PyQt5.QtGui import QPixmap, QColor, QImage , QIcon
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt, QThread
 import sys
 import cv2
 import numpy as np
-
+from utils import Sign_Recognition as sr
 
 class VideoThread(QThread):
     change_pixmap_signal = pyqtSignal(np.ndarray)
@@ -33,6 +33,7 @@ class Window(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Qt static label demo")
+        self.setWindowIcon(QIcon('logo192.png'))
         self.display_width = 640
         self.display_height = 480
         # create the label that holds the image
@@ -60,7 +61,11 @@ class Window(QMainWindow):
     @pyqtSlot(np.ndarray)
     def update_image(self, cv_img):
         """Updates the image_label with a new opencv image"""
-        qt_img = self.convert_cv_qt(cv_img)
+        qt_img = self.convert_cv_qt(cv2.rectangle(cv_img , (300,300) , (100,100), (0,255,0) , 0))
+        image_to_process = cv_img[100:300, 100:300]
+        index = sr.predict_img(image_to_process)
+        prediction = sr.CATEGORIES[index]
+        print(prediction)
         self.image_label.setPixmap(qt_img)
 
     def convert_cv_qt(self, cv_img):
