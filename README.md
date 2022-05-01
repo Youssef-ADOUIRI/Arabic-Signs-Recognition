@@ -5,7 +5,7 @@ You can dowloand the complete project, or only [GUI, saved_model] folders for th
 
 For direct console opencv test for the tensorflow model you can use the cv2_test.py script.
 
-Please modify the path to the saved model in the utils/Sign_Recognation.py script to the absolute path in your machine (Or your proper tensorflwo model h5 file).
+Please modify the path to the saved model in the utils/Sign_Recognation.py script to the absolute path in your machine (Or your proper tensorflow model h5 file).
 
 
 
