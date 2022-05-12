@@ -6,7 +6,8 @@ import os
 
 
 
-path = os.path.join( 'C:/Users/YOUSSEF/Documents/GitHub/Arab-Signs' , 'saved_model/ARS_REC_model_gray.h5') 
+ROOT_DIR =os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+path = os.path.join( ROOT_DIR , 'saved_model/ARS_REC_model_gray_v3.h5') 
 model = models.load_model(path)
 
 IMG_SIZE = 64

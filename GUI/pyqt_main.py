@@ -4,7 +4,51 @@ from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt, QThread
 import sys
 import cv2
 import numpy as np
-from utils import Sign_Recognition as sr
+#from utils import Sign_Recognition as sr
+import os
+from tensorflow.keras import models
+import imutils
+from imutils.video import FPS
+from threading import Thread
+
+'''
+#Python 3
+if sys.version_info >= (3, 0):
+	from queue import Queue
+#Python 2.7
+else:
+	from Queue import Queue
+'''
+
+
+#Tensorflow utils
+ROOT_DIR =os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+path = os.path.join( ROOT_DIR , 'saved_model/ARS_REC_model_gray_v3.h5') 
+model = models.load_model(path)
+IMG_SIZE = 64
+CATEGORIES = ['ain', 'al', 'aleff', 'bb', 'dal', 'dha', 'dhad', 'fa', 
+             'gaaf', 'ghain', 'ha', 'haa', 'jeem', 'kaaf', 'khaa', 'la', 
+             'laam', 'meem', 'nun', 'ra', 'saad', 'seen', 'sheen', 'ta', 
+             'taa', 'thaa', 'thal', 'toot', 'waw', 'ya', 'yaa', 'zay']
+fps = FPS().start()
+
+def predict_img(image):
+    g_img = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
+    resized = imutils.resize(g_img, width=IMG_SIZE , height=IMG_SIZE)
+    l_img = [resized]
+
+    input = np.array(l_img)
+    input = input.reshape(-1 , IMG_SIZE, IMG_SIZE , 1 )
+    #convert to flaot
+    input = input.astype('float32')
+    #converting value from [0,255] to [0,1]
+    input /= 255.0
+    prediction = model.predict(input)
+    ind = np.argmax(prediction)
+    #print(ind[0][0])
+    return ind
+
+
 
 class VideoThread(QThread):
     change_pixmap_signal = pyqtSignal(np.ndarray)
@@ -12,16 +56,23 @@ class VideoThread(QThread):
     def __init__(self):
         super().__init__()
         self._run_flag = True
+        #self.Q = Queue(maxsize=128)
 
     def run(self):
         # capture from web cam
         cap = cv2.VideoCapture(0)
         while self._run_flag:
+            #if not self.Q.full():
             ret, cv_img = cap.read()
             if ret:
+                    #self.Q.put(cv_img)
                 self.change_pixmap_signal.emit(cv_img)
+            else:
+                self.stop()
+                return
         # shut down capture system
         cap.release()
+        cv2.destroyAllWindows()
 
     def stop(self):
         """Sets run flag to False and waits for thread to finish"""
@@ -46,13 +97,14 @@ class Window(QMainWindow):
         self.image_label = QLabel(self)
         self.image_label.setObjectName('vid')
         self.image_label.resize(self.display_width, self.display_height)
+        '''
         effect = QGraphicsDropShadowEffect(self)
         effect.setColor(QColor(0x99, 0x99, 0x99))
         effect.setBlurRadius(10)
         effect.setXOffset(5)
         effect.setYOffset(5)
         self.image_label.setGraphicsEffect(effect)
-
+        '''
         # create a text label
         predi = 'none'
         self.textLabel = QLabel(predi , self)
@@ -65,7 +117,7 @@ class Window(QMainWindow):
         vbox.addWidget(self.title)
         vbox.addWidget(self.image_label)
         vbox.addWidget(self.textLabel)
-  
+        
         # set the vbox layout as the widgets layout
         wid.setLayout(vbox)
         
@@ -80,8 +132,9 @@ class Window(QMainWindow):
     def update_image(self, cv_img):
         qt_img = self.convert_cv_qt(cv2.rectangle(cv_img , (300,300) , (100,100), (0,255,0) , 0))
         image_to_process = cv_img[100:300, 100:300]
-        index = sr.predict_img(image_to_process)
-        prediction = sr.CATEGORIES[index]
+        fps.update()
+        index = predict_img(image_to_process)
+        prediction = CATEGORIES[index]
         self.textLabel.setText(prediction)
         self.image_label.setPixmap(qt_img)
 
@@ -94,6 +147,9 @@ class Window(QMainWindow):
         return QPixmap.fromImage(p)
     
     def closeEvent(self, event):
+        fps.stop()
+        print("[INFO] elasped time: {:.2f}".format(fps.elapsed()))
+        print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
         self.thread.stop()
         event.accept()
 
@@ -103,6 +159,7 @@ class Window(QMainWindow):
 
 if __name__ == "__main__":
     # create pyqt5 app
+    # start the app
     App = QApplication(sys.argv)
     App.setObjectName('app')
     
@@ -132,5 +189,4 @@ if __name__ == "__main__":
     window.show()
     
 
-    # start the app
     sys.exit(App.exec())
