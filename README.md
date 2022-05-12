@@ -18,6 +18,8 @@ Trained by the training_scripts/Arabic_Signs_Rec_gray.ipynb google colab noteboo
 The model is saved in 'saved_model' folder with the '.h5' extention
 
 It has a performance of 92% accuracy
+![ARS_Heatmap_grayV3](https://user-images.githubusercontent.com/86375309/168066530-10c87c52-76df-41d5-9587-2794018590f9.png)
+
 
 ## Web page
 In the web-page folder, the app is developped with :
@@ -26,4 +28,4 @@ Reactjs for frontend and backend using flask api to predict images from opencv c
 
 ## Graphical user interface
 The GUI folder contains .py script for the gui using PyQT5 framework and utils folder for machine learning script
-![ARS_Heatmap_grayV3](https://user-images.githubusercontent.com/86375309/168066530-10c87c52-76df-41d5-9587-2794018590f9.png)
+
