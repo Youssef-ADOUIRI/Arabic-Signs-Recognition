@@ -3,9 +3,7 @@ This project is a website and desktop application for arabic hand sign language 
 
 You can dowloand the complete project, or only [GUI, saved_model] folders for the desktop app, or [web_app, saved_model] folders for the reactjs+flaskAPI project.
 
-For direct console opencv test for the tensorflow model you can use the cv2_test.py script.
-
-Please modify the path to the saved model in the utils/Sign_Recognation.py script to the absolute path in your machine (Or your proper tensorflow model h5 file).
+For direct opencv/console test for the tensorflow model you can use the cv2_test.py script.
 
 
 
@@ -17,7 +15,13 @@ Trained by the training_scripts/Arabic_Signs_Rec_gray.ipynb google colab noteboo
 
 The model is saved in 'saved_model' folder with the '.h5' extention
 
-It has a performance of 92% accuracy
+So far the "ARS_REC_model_gray_v3.h5" is the most accurate model
+
+It has a performance of 94% accuracy
+
+Here is the heatmap of the confusion matrix foreach letter :
+![ARS_Heatmap_grayV3](https://user-images.githubusercontent.com/86375309/168066530-10c87c52-76df-41d5-9587-2794018590f9.png)
+
 
 ## Web page
 In the web-page folder, the app is developped with :
@@ -25,4 +29,5 @@ Reactjs for frontend and backend using flask api to predict images from opencv c
 
 
 ## Graphical user interface
-The GUI folder contains .py script for the gui using PyQT5 framework and utils folder for machine learning script
+The GUI folder contains '.py' script for the gui using PyQT5 framework
+
