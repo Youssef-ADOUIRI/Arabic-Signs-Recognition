@@ -6,10 +6,13 @@ import cv2
 import numpy as np
 #from utils import Sign_Recognition as sr
 import os
+from pyparsing import Char
 from tensorflow.keras import models
 import imutils
 from imutils.video import FPS
 from threading import Thread
+import arabic_reshaper
+from bidi.algorithm import get_display
 
 '''
 #Python 3
@@ -20,6 +23,8 @@ else:
 	from Queue import Queue
 '''
 
+currentVal = u''
+phraseList = []
 
 #Tensorflow utils
 ROOT_DIR =os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -30,6 +35,23 @@ CATEGORIES = ['ain', 'al', 'aleff', 'bb', 'dal', 'dha', 'dhad', 'fa',
              'gaaf', 'ghain', 'ha', 'haa', 'jeem', 'kaaf', 'khaa', 'la', 
              'laam', 'meem', 'nun', 'ra', 'saad', 'seen', 'sheen', 'ta', 
              'taa', 'thaa', 'thal', 'toot', 'waw', 'ya', 'yaa', 'zay']
+buckwalterMod = {
+        'ء': 'c', 'ا': 'A', 'إ': 'A',
+        'أ': 'aleff', 'آ': 'A', 'ب': 'bb',
+        'ة': 'toot', 'ت': 'taa', 'ث': 'thaa',
+        'ج': 'jeem', 'ح': 'haa', 'خ': 'khaa',
+        'د': 'dal', 'ذ': 'thal', 'ر': 'ra',
+        'ز': 'zay', 'س': 'seen', 'ش': 'sheen',
+        'ص': 'saad', 'ض': 'dhad', 'ط': 'ta',
+        'ظ': 'dha', 'ع': 'ain', 'غ': 'ghain',
+        'ف': 'fa', 'ق': 'gaaf', 'ك': 'kaaf',
+        'ل': 'laam', 'م': 'meem', 'ن': 'nun',
+        'ه': 'ha', 'ؤ': 'c', 'و': 'waw',
+        'ى': 'yaa', 'ئ': 'c', 'ي': 'ya',
+        }
+
+reversedBucket = {y: x for x, y in buckwalterMod.items()} 
+
 fps = FPS().start()
 
 def predict_img(image):
@@ -47,7 +69,6 @@ def predict_img(image):
     ind = np.argmax(prediction)
     #print(ind[0][0])
     return ind
-
 
 
 class VideoThread(QThread):
@@ -107,9 +128,12 @@ class Window(QMainWindow):
         '''
         # create a text label
         predi = 'none'
+        phrase_txt = u''
         self.textLabel = QLabel(predi , self)
         self.textLabel.setObjectName('predi')
-
+        self.phrase = QLabel(phrase_txt , self)
+        self.printButton = QPushButton('PyQt5 button', self)
+        self.printButton.clicked.connect(self.on_click)
         # create a vertical box layout and add the labels
         wid = QWidget(self)
         self.setCentralWidget(wid)
@@ -117,6 +141,8 @@ class Window(QMainWindow):
         vbox.addWidget(self.title)
         vbox.addWidget(self.image_label)
         vbox.addWidget(self.textLabel)
+        vbox.addWidget(self.printButton)
+        vbox.addWidget(self.phrase)
         
         # set the vbox layout as the widgets layout
         wid.setLayout(vbox)
@@ -127,6 +153,7 @@ class Window(QMainWindow):
         self.thread.change_pixmap_signal.connect(self.update_image)
         # start the thread
         self.thread.start()
+        print(currentVal)
 
     @pyqtSlot(np.ndarray)
     def update_image(self, cv_img):
@@ -135,9 +162,18 @@ class Window(QMainWindow):
         fps.update()
         index = predict_img(image_to_process)
         prediction = CATEGORIES[index]
+        currentVal = reversedBucket[prediction]
         self.textLabel.setText(prediction)
         self.image_label.setPixmap(qt_img)
 
+    @pyqtSlot()
+    def on_click(self):
+        print('PyQt5 button click')
+        phraseList.append(currentVal)
+        if(len(phraseList) > 3):
+            phrase_txt = ''.join(phraseList)
+
+    
     def convert_cv_qt(self, cv_img):
         rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
         h, w, ch = rgb_image.shape
