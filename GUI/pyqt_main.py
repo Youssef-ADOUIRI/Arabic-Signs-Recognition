@@ -96,9 +96,11 @@ class Window(QMainWindow):
         super().__init__()
         self.setWindowTitle("Qt ASR GUI")
         self.setWindowIcon(QIcon('logo192.png'))
+        self.resize(1280,720)
         self.display_width = 640
         self.display_height = 480
-
+        self.grey = QPixmap(self.display_width, self.display_height)
+        self.grey.fill(QColor('darkGray'))
         #title
         self.title = QLabel('Arabic Signs Language')
         self.title.setObjectName('title1')
@@ -107,6 +109,7 @@ class Window(QMainWindow):
         self.image_label = QLabel(self)
         self.image_label.setObjectName('vid')
         self.image_label.resize(self.display_width, self.display_height)
+        self.image_label.setPixmap(self.grey)
         '''
         effect = QGraphicsDropShadowEffect(self)
         effect.setColor(QColor(0x99, 0x99, 0x99))
@@ -126,8 +129,10 @@ class Window(QMainWindow):
         self.textLabel.setAlignment(Qt.AlignCenter)
         
         #self.phrase = QLabel(phrase_txt , self)
-        #self.printButton = QPushButton('PyQt5 button', self)
-        #self.printButton.clicked.connect(self.on_click)
+        self.btn_openCam = QPushButton('op/cl cam', self)
+        self.btn_openCam.clicked.connect(self.on_click)
+        self.btn_openCam.setCheckable(True)
+        self.btn_openCam.setStyleSheet("")
 
         self.toggle_1 = Toggle()
         # create a vertical box layout and add the labels
@@ -138,19 +143,12 @@ class Window(QMainWindow):
         vbox.addWidget(self.image_label,1,1)
         vbox.addWidget(self.textLabel,2,1)
         vbox.addWidget(self.toggle_1,2,2)
-        #vbox.addWidget(self.printButton)
+        vbox.addWidget(self.btn_openCam)
         #vbox.addWidget(self.phrase)
         
         # set the vbox layout as the widgets layout
         wid.setLayout(vbox)
-        
-        # create the video capture thread
-        self.Vid_thread = VideoThread()
-        # connect its signal to the update_image slot
-        self.Vid_thread.change_pixmap_signal.connect(self.update_image)
-        # start the thread
-        self.thread.start()
-        print(currentVal)
+        self.Vid_thread = None
 
     @pyqtSlot(np.ndarray)
     def update_image(self, cv_img):
@@ -163,30 +161,37 @@ class Window(QMainWindow):
         self.textLabel.setText(prediction)
         self.image_label.setPixmap(qt_img)
 
-    def predict_img(image):
+    def predict_img(self,image):
         g_img = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
         resized = imutils.resize(g_img, width=IMG_SIZE , height=IMG_SIZE)
         l_img = [resized]
 
-        input = np.array(l_img)
+        input = np.array(l_img , dtype=np.float32)
         input = input.reshape(-1 , IMG_SIZE, IMG_SIZE , 1 )
-        #convert to flaot
-        input = input.astype('float32')
-        #converting value from [0,255] to [0,1]
-        input /= 255.0
-        prediction = model.predict(input)
+        #converting value from [0,255] to [0,1] then predict
+        prediction = model.predict(input/255.0)
         ind = np.argmax(prediction)
         #print(ind[0][0])
         return ind
 
-    '''
+    
     @pyqtSlot()
     def on_click(self):
-        print('PyQt5 button click')
-        phraseList.append(currentVal)
-        if(len(phraseList) > 3):
-            phrase_txt = ''.join(phraseList)
-    '''
+        if self.btn_openCam.isChecked():
+            self.btn_openCam.setStyleSheet("background-color : white")
+            # create the video capture thread
+            self.Vid_thread = VideoThread()
+            # connect its signal to the update_image slot
+            self.Vid_thread.change_pixmap_signal.connect(self.update_image)
+            # start the thread
+            self.Vid_thread.start()
+
+        elif self.Vid_thread is not None:
+            self.btn_openCam.setStyleSheet("background-color : lightgray")
+            # set the image image to the grey pixmap
+            self.image_label.setPixmap(self.grey)
+            self.Vid_thread.stop()
+        
     
     def convert_cv_qt(self, cv_img):
         rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
@@ -200,11 +205,9 @@ class Window(QMainWindow):
         fps.stop()
         print("[INFO] elasped time: {:.2f}".format(fps.elapsed()))
         print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
-        self.thread.stop()
+        self.Vid_thread.stop()
         event.accept()
     
-    def openCamera(self):
-        pass
 
 
 
@@ -235,6 +238,7 @@ if __name__ == "__main__":
             text-align: center;
             font-size: 30px;
         }
+
     """
     App.setStyleSheet(css)
     # create the instance of our Window
