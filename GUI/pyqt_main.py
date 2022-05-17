@@ -75,7 +75,7 @@ class VideoThread(QThread):
             #if not self.Q.full():
             ret, cv_img = cap.read()
             if ret:
-                    #self.Q.put(cv_img)
+                #self.Q.put(cv_img)
                 self.change_pixmap_signal.emit(cv_img)
             else:
                 self.stop()
@@ -96,7 +96,7 @@ class Window(QMainWindow):
         super().__init__()
         self.setWindowTitle("Qt ASR GUI")
         self.setWindowIcon(QIcon('logo192.png'))
-        self.resize(1280,720)
+        self.resize(662,720)
         self.display_width = 640
         self.display_height = 480
         self.grey = QPixmap(self.display_width, self.display_height)
@@ -130,20 +130,23 @@ class Window(QMainWindow):
         
         #self.phrase = QLabel(phrase_txt , self)
         self.btn_openCam = QPushButton('op/cl cam', self)
-        self.btn_openCam.clicked.connect(self.on_click)
+        self.btn_openCam.clicked.connect(self.openCamera_click)
         self.btn_openCam.setCheckable(True)
-        self.btn_openCam.setStyleSheet("")
+
+        self.btn_predction = QPushButton('Give prediction', self)
+        self.btn_predction.clicked.connect(self.takePrediction)
 
         self.toggle_1 = Toggle()
         # create a vertical box layout and add the labels
         wid = QWidget(self)
         self.setCentralWidget(wid)
-        vbox =  QGridLayout()
+        vbox = QGridLayout()
         vbox.addWidget(self.title , 0,1)
-        vbox.addWidget(self.image_label,1,1)
+        vbox.addWidget(self.image_label,1,1 )
         vbox.addWidget(self.textLabel,2,1)
-        vbox.addWidget(self.toggle_1,2,2)
-        vbox.addWidget(self.btn_openCam)
+        #vbox.addWidget(self.toggle_1,2,2)
+        vbox.addWidget(self.btn_openCam, 3 , 1 )
+        vbox.addWidget(self.btn_predction , 4, 1 )
         #vbox.addWidget(self.phrase)
         
         # set the vbox layout as the widgets layout
@@ -168,7 +171,7 @@ class Window(QMainWindow):
 
         input = np.array(l_img , dtype=np.float32)
         input = input.reshape(-1 , IMG_SIZE, IMG_SIZE , 1 )
-        #converting value from [0,255] to [0,1] then predict
+        #converting value from [0,255] to [0,1], then predict
         prediction = model.predict(input/255.0)
         ind = np.argmax(prediction)
         #print(ind[0][0])
@@ -176,7 +179,7 @@ class Window(QMainWindow):
 
     
     @pyqtSlot()
-    def on_click(self):
+    def openCamera_click(self):
         if self.btn_openCam.isChecked():
             self.btn_openCam.setStyleSheet("background-color : white")
             # create the video capture thread
@@ -188,9 +191,13 @@ class Window(QMainWindow):
 
         elif self.Vid_thread is not None:
             self.btn_openCam.setStyleSheet("background-color : lightgray")
+            self.Vid_thread.stop()
             # set the image image to the grey pixmap
             self.image_label.setPixmap(self.grey)
-            self.Vid_thread.stop()
+    @pyqtSlot()
+    def takePrediction(self):
+        print("Prediction is : ",self.textLabel.text() )
+
         
     
     def convert_cv_qt(self, cv_img):
@@ -205,7 +212,8 @@ class Window(QMainWindow):
         fps.stop()
         print("[INFO] elasped time: {:.2f}".format(fps.elapsed()))
         print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
-        self.Vid_thread.stop()
+        if self.Vid_thread:
+            self.Vid_thread.stop()
         event.accept()
     
 
@@ -219,7 +227,7 @@ if __name__ == "__main__":
     App = QApplication(sys.argv)
     App.setObjectName('app')
     
-    css = """
+    qss = """
         QWidget{
             margin: 0;
             padding: 0;
@@ -240,7 +248,7 @@ if __name__ == "__main__":
         }
 
     """
-    App.setStyleSheet(css)
+    App.setStyleSheet(qss)
     # create the instance of our Window
     window = Window()
     window.show()
