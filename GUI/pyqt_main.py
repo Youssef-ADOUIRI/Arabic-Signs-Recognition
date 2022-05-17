@@ -1,6 +1,9 @@
+from multiprocessing.spawn import get_preparation_data
+from operator import index
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QPixmap, QColor, QImage , QIcon
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt, QThread
+from qtwidgets import Toggle, AnimatedToggle
 import sys
 import cv2
 import numpy as np
@@ -13,6 +16,8 @@ from imutils.video import FPS
 from threading import Thread
 import arabic_reshaper
 from bidi.algorithm import get_display
+import threading
+import time
 
 '''
 #Python 3
@@ -22,6 +27,8 @@ if sys.version_info >= (3, 0):
 else:
 	from Queue import Queue
 '''
+
+
 
 currentVal = u''
 phraseList = []
@@ -50,27 +57,9 @@ buckwalterMod = {
         'ى': 'yaa', 'ئ': 'c', 'ي': 'ya',
         }
 
-reversedBucket = {y: x for x, y in buckwalterMod.items()} 
+#reversedBucket = {y: x for x, y in buckwalterMod.items()} 
 
 fps = FPS().start()
-
-def predict_img(image):
-    g_img = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
-    resized = imutils.resize(g_img, width=IMG_SIZE , height=IMG_SIZE)
-    l_img = [resized]
-
-    input = np.array(l_img)
-    input = input.reshape(-1 , IMG_SIZE, IMG_SIZE , 1 )
-    #convert to flaot
-    input = input.astype('float32')
-    #converting value from [0,255] to [0,1]
-    input /= 255.0
-    prediction = model.predict(input)
-    ind = np.argmax(prediction)
-    #print(ind[0][0])
-    return ind
-
-
 class VideoThread(QThread):
     change_pixmap_signal = pyqtSignal(np.ndarray)
 
@@ -113,7 +102,7 @@ class Window(QMainWindow):
         #title
         self.title = QLabel('Arabic Signs Language')
         self.title.setObjectName('title1')
-
+        self.title.setAlignment(Qt.AlignCenter)
         # create the label that holds the image
         self.image_label = QLabel(self)
         self.image_label.setObjectName('vid')
@@ -126,31 +115,39 @@ class Window(QMainWindow):
         effect.setYOffset(5)
         self.image_label.setGraphicsEffect(effect)
         '''
+
+        #sr = reversedBucket['aleff'].encode('UTF-8')
+        #print(sr)
         # create a text label
         predi = 'none'
-        phrase_txt = u''
+        #phrase_txt = u''
         self.textLabel = QLabel(predi , self)
         self.textLabel.setObjectName('predi')
-        self.phrase = QLabel(phrase_txt , self)
-        self.printButton = QPushButton('PyQt5 button', self)
-        self.printButton.clicked.connect(self.on_click)
+        self.textLabel.setAlignment(Qt.AlignCenter)
+        
+        #self.phrase = QLabel(phrase_txt , self)
+        #self.printButton = QPushButton('PyQt5 button', self)
+        #self.printButton.clicked.connect(self.on_click)
+
+        self.toggle_1 = Toggle()
         # create a vertical box layout and add the labels
         wid = QWidget(self)
         self.setCentralWidget(wid)
-        vbox = QVBoxLayout()
-        vbox.addWidget(self.title)
-        vbox.addWidget(self.image_label)
-        vbox.addWidget(self.textLabel)
-        vbox.addWidget(self.printButton)
-        vbox.addWidget(self.phrase)
+        vbox =  QGridLayout()
+        vbox.addWidget(self.title , 0,1)
+        vbox.addWidget(self.image_label,1,1)
+        vbox.addWidget(self.textLabel,2,1)
+        vbox.addWidget(self.toggle_1,2,2)
+        #vbox.addWidget(self.printButton)
+        #vbox.addWidget(self.phrase)
         
         # set the vbox layout as the widgets layout
         wid.setLayout(vbox)
         
         # create the video capture thread
-        self.thread = VideoThread()
+        self.Vid_thread = VideoThread()
         # connect its signal to the update_image slot
-        self.thread.change_pixmap_signal.connect(self.update_image)
+        self.Vid_thread.change_pixmap_signal.connect(self.update_image)
         # start the thread
         self.thread.start()
         print(currentVal)
@@ -160,19 +157,36 @@ class Window(QMainWindow):
         qt_img = self.convert_cv_qt(cv2.rectangle(cv_img , (300,300) , (100,100), (0,255,0) , 0))
         image_to_process = cv_img[100:300, 100:300]
         fps.update()
-        index = predict_img(image_to_process)
+        index = self.predict_img(image_to_process)
         prediction = CATEGORIES[index]
-        currentVal = reversedBucket[prediction]
+        #currentVal = reversedBucket[prediction]
         self.textLabel.setText(prediction)
         self.image_label.setPixmap(qt_img)
 
+    def predict_img(image):
+        g_img = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
+        resized = imutils.resize(g_img, width=IMG_SIZE , height=IMG_SIZE)
+        l_img = [resized]
+
+        input = np.array(l_img)
+        input = input.reshape(-1 , IMG_SIZE, IMG_SIZE , 1 )
+        #convert to flaot
+        input = input.astype('float32')
+        #converting value from [0,255] to [0,1]
+        input /= 255.0
+        prediction = model.predict(input)
+        ind = np.argmax(prediction)
+        #print(ind[0][0])
+        return ind
+
+    '''
     @pyqtSlot()
     def on_click(self):
         print('PyQt5 button click')
         phraseList.append(currentVal)
         if(len(phraseList) > 3):
             phrase_txt = ''.join(phraseList)
-
+    '''
     
     def convert_cv_qt(self, cv_img):
         rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
@@ -188,6 +202,9 @@ class Window(QMainWindow):
         print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
         self.thread.stop()
         event.accept()
+    
+    def openCamera(self):
+        pass
 
 
 
