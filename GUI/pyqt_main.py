@@ -30,7 +30,7 @@ else:
 
 
 
-currentVal = u''
+currentVal = u'\u0623'
 phraseList = []
 
 #Tensorflow utils
@@ -57,7 +57,7 @@ buckwalterMod = {
         'ى': 'yaa', 'ئ': 'c', 'ي': 'ya',
         }
 
-#reversedBucket = {y: x for x, y in buckwalterMod.items()} 
+reversedBucket = {y: x for x, y in buckwalterMod.items()} 
 
 fps = FPS().start()
 class VideoThread(QThread):
@@ -128,6 +128,11 @@ class Window(QMainWindow):
         self.textLabel.setObjectName('predi')
         self.textLabel.setAlignment(Qt.AlignCenter)
         
+        arabChar = '\u0626'
+        self.arabicNotation = QLabel(arabChar , self)
+        self.textLabel.setObjectName('arabNot')
+        self.arabicNotation.setAlignment(Qt.AlignCenter)
+
         #self.phrase = QLabel(phrase_txt , self)
         self.btn_openCam = QPushButton('op/cl cam', self)
         self.btn_openCam.clicked.connect(self.openCamera_click)
@@ -147,6 +152,7 @@ class Window(QMainWindow):
         #vbox.addWidget(self.toggle_1,2,2)
         vbox.addWidget(self.btn_openCam, 3 , 1 )
         vbox.addWidget(self.btn_predction , 4, 1 )
+        vbox.addWidget(self.arabicNotation , 5 , 1)
         #vbox.addWidget(self.phrase)
         
         # set the vbox layout as the widgets layout
@@ -162,6 +168,8 @@ class Window(QMainWindow):
         prediction = CATEGORIES[index]
         #currentVal = reversedBucket[prediction]
         self.textLabel.setText(prediction)
+        #arabNot = ord(reversedBucket[prediction]).encode('ascii', 'backslashreplace').decode("utf-8")
+        self.arabicNotation.setText(reversedBucket[prediction])
         self.image_label.setPixmap(qt_img)
 
     def predict_img(self,image):
@@ -225,7 +233,6 @@ if __name__ == "__main__":
     # create pyqt5 app
     # start the app
     App = QApplication(sys.argv)
-    App.setObjectName('app')
     
     qss = """
         QWidget{
@@ -246,11 +253,18 @@ if __name__ == "__main__":
             text-align: center;
             font-size: 30px;
         }
+        #arabNot{
+            text-align: center;
+            font-size: 30px;
+        }
 
     """
     App.setStyleSheet(qss)
+    
     # create the instance of our Window
     window = Window()
+    window.setStyleSheet(qss)
+    window.arabicNotation.setText('\u0624')
     window.show()
     
 
