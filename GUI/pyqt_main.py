@@ -105,7 +105,7 @@ class Window(QMainWindow):
         predi = 'none'
         self.textLabel = QLabel(predi , self)
         self.textLabel.setAlignment(Qt.AlignCenter)
-        arabChar = '\u0626'
+        arabChar = 'لا شيئ'
         self.arabicNotation = QLabel(arabChar , self)
         self.arabicNotation.setAlignment(Qt.AlignCenter)
 
@@ -166,6 +166,8 @@ class Window(QMainWindow):
         self.image_label.setPixmap(qt_img)
         if not self.btn_openCam.isChecked() or self.Vid_thread is None:
             self.image_label.setPixmap(self.grey)
+            self.arabicNotation.setText('لا شيئ')
+            self.textLabel.setText('none')
         
 
     def predict_img(self,image):
@@ -205,11 +207,8 @@ class Window(QMainWindow):
 
     @pyqtSlot()
     def add_to_phrase(self):
-        '''
-        if self.phrase_label.text() == '' :
-            self.phrase_label.setText('لا شيئ')
-        '''
-        self.phrase_label.setText(self.phrase_label.text() + self.arabicNotation.text())
+        if 'لا شيئ' != self.arabicNotation.text() :
+            self.phrase_label.setText(self.phrase_label.text() + self.arabicNotation.text())
 
         
     
