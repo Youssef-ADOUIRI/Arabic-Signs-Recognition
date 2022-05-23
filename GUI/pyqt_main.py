@@ -1,5 +1,3 @@
-from multiprocessing.spawn import get_preparation_data
-from operator import index
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QPixmap, QColor, QImage , QIcon
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt, QThread
@@ -9,14 +7,12 @@ import cv2
 import numpy as np
 #from utils import Sign_Recognition as sr
 import os
-from pyparsing import Char
 from tensorflow.keras import models
 import imutils
 from imutils.video import FPS
 from threading import Thread
 import arabic_reshaper
 from bidi.algorithm import get_display
-import threading
 import time
 
 '''
@@ -94,7 +90,7 @@ class Window(QMainWindow):
     
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Qt ASR GUI")
+        self.setWindowTitle("ASLR GUI")
         self.setWindowIcon(QIcon('logo192.png'))
         self.resize(662,720)
         self.display_width = 640
@@ -110,24 +106,11 @@ class Window(QMainWindow):
         self.image_label.setObjectName('vid')
         self.image_label.resize(self.display_width, self.display_height)
         self.image_label.setPixmap(self.grey)
-        '''
-        effect = QGraphicsDropShadowEffect(self)
-        effect.setColor(QColor(0x99, 0x99, 0x99))
-        effect.setBlurRadius(10)
-        effect.setXOffset(5)
-        effect.setYOffset(5)
-        self.image_label.setGraphicsEffect(effect)
-        '''
-
-        #sr = reversedBucket['aleff'].encode('UTF-8')
-        #print(sr)
         # create a text label
         predi = 'none'
-        #phrase_txt = u''
         self.textLabel = QLabel(predi , self)
         self.textLabel.setObjectName('predi')
         self.textLabel.setAlignment(Qt.AlignCenter)
-        
         arabChar = '\u0626'
         self.arabicNotation = QLabel(arabChar , self)
         self.textLabel.setObjectName('arabNot')
@@ -189,7 +172,7 @@ class Window(QMainWindow):
     @pyqtSlot()
     def openCamera_click(self):
         if self.btn_openCam.isChecked():
-            self.btn_openCam.setStyleSheet("background-color : white")
+            #self.btn_openCam.setStyleSheet("background-color : #FFDF6C")
             # create the video capture thread
             self.Vid_thread = VideoThread()
             # connect its signal to the update_image slot
@@ -198,7 +181,7 @@ class Window(QMainWindow):
             self.Vid_thread.start()
 
         elif self.Vid_thread is not None:
-            self.btn_openCam.setStyleSheet("background-color : lightgray")
+            #self.btn_openCam.setStyleSheet("background-color : #FFDF6C")
             self.Vid_thread.stop()
             # set the image image to the grey pixmap
             self.image_label.setPixmap(self.grey)
@@ -236,35 +219,29 @@ if __name__ == "__main__":
     
     qss = """
         QWidget{
-            margin: 0;
+            margin: 6px;
             padding: 0;
         }
-        #vid{
-            background:rgb(255, 255, 255);
-            border-top-left-radius: 30px;
-            border-top-right-radius: 30px;
+        *{
+            background-color: #202020 ;
         }
-        #title1{
-            text-align: center;
-            font-size: 40px;
-            font-family: Fira Sans;
+        QLabel{
+            color: #FFFFFF;
         }
-        #predi{
-            text-align: center;
-            font-size: 30px;
+        QPushButton{
+            color: #FFDF6C;
+            background-color:#707070;
+            padding: 5px
         }
-        #arabNot{
-            text-align: center;
-            font-size: 30px;
-        }
-
     """
-    App.setStyleSheet(qss)
-    
+    #494D5F
     # create the instance of our Window
     window = Window()
     window.setStyleSheet(qss)
-    window.arabicNotation.setText('\u0624')
+    window.arabicNotation.setStyleSheet("text-align: center;font-size: 30px;")
+    window.textLabel.setStyleSheet("text-align: center;font-size: 30px;")
+    window.title.setStyleSheet("text-align: center;font-size: 40px; color:#FFDF6C")
+    window.image_label.setStyleSheet("background:rgb(255, 255, 255);border-top-left-radius: 30px;border-top-right-radius: 30px;")
     window.show()
     
 
