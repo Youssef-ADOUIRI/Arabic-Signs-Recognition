@@ -5,7 +5,6 @@ from qtwidgets import Toggle, AnimatedToggle
 import sys
 import cv2
 import numpy as np
-#from utils import Sign_Recognition as sr
 import os
 from tensorflow.keras import models
 import imutils
@@ -25,10 +24,6 @@ else:
 '''
 
 
-
-currentVal = u'\u0623'
-phraseList = []
-
 #Tensorflow utils
 ROOT_DIR =os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 path = os.path.join( ROOT_DIR , 'saved_model/ARS_REC_model_gray_v3.h5') 
@@ -38,6 +33,7 @@ CATEGORIES = ['ain', 'al', 'aleff', 'bb', 'dal', 'dha', 'dhad', 'fa',
              'gaaf', 'ghain', 'ha', 'haa', 'jeem', 'kaaf', 'khaa', 'la', 
              'laam', 'meem', 'nun', 'ra', 'saad', 'seen', 'sheen', 'ta', 
              'taa', 'thaa', 'thal', 'toot', 'waw', 'ya', 'yaa', 'zay']
+#Unicode arabic notations
 buckwalterMod = {
         'ء': 'c', 'ا': 'A', 'إ': 'A',
         'أ': 'aleff', 'آ': 'A', 'ب': 'bb',
@@ -117,7 +113,7 @@ class Window(QMainWindow):
         self.arabicNotation.setAlignment(Qt.AlignCenter)
 
         #self.phrase = QLabel(phrase_txt , self)
-        self.btn_openCam = QPushButton('op/cl cam', self)
+        self.btn_openCam = QPushButton('Open camera', self)
         self.btn_openCam.clicked.connect(self.openCamera_click)
         self.btn_openCam.setCheckable(True)
 
@@ -154,6 +150,9 @@ class Window(QMainWindow):
         #arabNot = ord(reversedBucket[prediction]).encode('ascii', 'backslashreplace').decode("utf-8")
         self.arabicNotation.setText(reversedBucket[prediction])
         self.image_label.setPixmap(qt_img)
+        if not self.btn_openCam.isChecked() or self.Vid_thread is None:
+            self.image_label.setPixmap(self.grey)
+        
 
     def predict_img(self,image):
         g_img = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
@@ -172,7 +171,7 @@ class Window(QMainWindow):
     @pyqtSlot()
     def openCamera_click(self):
         if self.btn_openCam.isChecked():
-            #self.btn_openCam.setStyleSheet("background-color : #FFDF6C")
+            self.btn_openCam.setText("Close camera")
             # create the video capture thread
             self.Vid_thread = VideoThread()
             # connect its signal to the update_image slot
@@ -181,7 +180,7 @@ class Window(QMainWindow):
             self.Vid_thread.start()
 
         elif self.Vid_thread is not None:
-            #self.btn_openCam.setStyleSheet("background-color : #FFDF6C")
+            self.btn_openCam.setText("Open camera")
             self.Vid_thread.stop()
             # set the image image to the grey pixmap
             self.image_label.setPixmap(self.grey)
@@ -241,7 +240,7 @@ if __name__ == "__main__":
     window.arabicNotation.setStyleSheet("text-align: center;font-size: 30px;")
     window.textLabel.setStyleSheet("text-align: center;font-size: 30px;")
     window.title.setStyleSheet("text-align: center;font-size: 40px; color:#FFDF6C")
-    window.image_label.setStyleSheet("background:rgb(255, 255, 255);border-top-left-radius: 30px;border-top-right-radius: 30px;")
+    window.image_label.setStyleSheet("background:darkGray;border-top-left-radius: 30px;border-top-right-radius: 30px;")
     window.show()
     
 
