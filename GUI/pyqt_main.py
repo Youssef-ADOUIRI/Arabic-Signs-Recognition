@@ -50,6 +50,7 @@ buckwalterMod = {
         }
 
 reversedBucket = {y: x for x, y in buckwalterMod.items()} 
+reversedBucket['la'] = 'ل'
 
 fps = FPS().start()
 class VideoThread(QThread):
@@ -95,21 +96,17 @@ class Window(QMainWindow):
         self.grey.fill(QColor('darkGray'))
         #title
         self.title = QLabel('Arabic Signs Language')
-        self.title.setObjectName('title1')
         self.title.setAlignment(Qt.AlignCenter)
         # create the label that holds the image
         self.image_label = QLabel(self)
-        self.image_label.setObjectName('vid')
         self.image_label.resize(self.display_width, self.display_height)
         self.image_label.setPixmap(self.grey)
         # create a text label
         predi = 'none'
         self.textLabel = QLabel(predi , self)
-        self.textLabel.setObjectName('predi')
         self.textLabel.setAlignment(Qt.AlignCenter)
         arabChar = '\u0626'
         self.arabicNotation = QLabel(arabChar , self)
-        self.textLabel.setObjectName('arabNot')
         self.arabicNotation.setAlignment(Qt.AlignCenter)
 
         #self.phrase = QLabel(phrase_txt , self)
@@ -117,8 +114,18 @@ class Window(QMainWindow):
         self.btn_openCam.clicked.connect(self.openCamera_click)
         self.btn_openCam.setCheckable(True)
 
-        self.btn_predction = QPushButton('Give prediction', self)
-        self.btn_predction.clicked.connect(self.takePrediction)
+        #phrase to build
+        arabic_phrase = 'اهلا بك الى البرنامج'
+        self.phrase_label = QLabel(arabic_phrase , self)
+        self.phrase_label.setAlignment(Qt.AlignCenter)
+
+        #add the current prediction to phrase
+        self.btn_predction = QPushButton('Add', self)
+        self.btn_predction.clicked.connect(self.add_to_phrase)
+
+        #Clear
+        self.btn_constract = QPushButton('Clear' , self)
+        self.btn_constract.clicked.connect(self.clear_phrase)
 
         self.toggle_1 = Toggle()
         # create a vertical box layout and add the labels
@@ -127,12 +134,19 @@ class Window(QMainWindow):
         vbox = QGridLayout()
         vbox.addWidget(self.title , 0,1)
         vbox.addWidget(self.image_label,1,1 )
-        vbox.addWidget(self.textLabel,2,1)
-        #vbox.addWidget(self.toggle_1,2,2)
+        predictionLabelHlayout = QHBoxLayout()
+        predictionLabelHlayout.addWidget(self.textLabel)
+        predictionLabelHlayout.addWidget(self.arabicNotation)
+        vbox.addLayout(predictionLabelHlayout , 2 , 1)
         vbox.addWidget(self.btn_openCam, 3 , 1 )
-        vbox.addWidget(self.btn_predction , 4, 1 )
-        vbox.addWidget(self.arabicNotation , 5 , 1)
-        #vbox.addWidget(self.phrase)
+
+        phraseBtnsHLayout = QHBoxLayout()
+        phraseBtnsHLayout.addWidget(self.btn_predction)
+        phraseBtnsHLayout.addWidget(self.btn_constract)
+
+        vbox.addLayout(phraseBtnsHLayout , 4, 1 )
+        
+        vbox.addWidget(self.phrase_label , 5 , 1)
         
         # set the vbox layout as the widgets layout
         wid.setLayout(vbox)
@@ -184,9 +198,18 @@ class Window(QMainWindow):
             self.Vid_thread.stop()
             # set the image image to the grey pixmap
             self.image_label.setPixmap(self.grey)
+    
     @pyqtSlot()
-    def takePrediction(self):
-        print("Prediction is : ",self.textLabel.text() )
+    def clear_phrase(self):
+        self.phrase_label.setText('') #clear the text
+
+    @pyqtSlot()
+    def add_to_phrase(self):
+        '''
+        if self.phrase_label.text() == '' :
+            self.phrase_label.setText('لا شيئ')
+        '''
+        self.phrase_label.setText(self.phrase_label.text() + self.arabicNotation.text())
 
         
     
@@ -230,7 +253,7 @@ if __name__ == "__main__":
         QPushButton{
             color: #FFDF6C;
             background-color:#707070;
-            padding: 5px
+            padding: 6px
         }
     """
     #494D5F
@@ -240,7 +263,7 @@ if __name__ == "__main__":
     window.arabicNotation.setStyleSheet("text-align: center;font-size: 30px;")
     window.textLabel.setStyleSheet("text-align: center;font-size: 30px;")
     window.title.setStyleSheet("text-align: center;font-size: 40px; color:#FFDF6C")
-    window.image_label.setStyleSheet("background:darkGray;border-top-left-radius: 30px;border-top-right-radius: 30px;")
+    window.image_label.setStyleSheet("background:darkGray;border-radius: 30px;")
     window.show()
     
 
