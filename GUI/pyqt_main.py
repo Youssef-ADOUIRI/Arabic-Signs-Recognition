@@ -45,7 +45,7 @@ reversedBucket['la'] = 'ل'
 
 fps = FPS().start()
 class VideoThread(QThread):
-    change_pixmap_signal = pyqtSignal(np.ndarray)
+    change_pixmap_signal = pyqtSignal(np.ndarray,int)
 
     def __init__(self):
         super().__init__()
@@ -59,8 +59,22 @@ class VideoThread(QThread):
             #if not self.Q.full():
             ret, cv_img = cap.read()
             if ret:
-                #self.Q.put(cv_img)
-                self.change_pixmap_signal.emit(cv_img)
+                
+                cv2.rectangle(cv_img , (300,300) , (100,100), (0,255,0) , 0)
+        
+                image_to_process = cv_img[100:300, 100:300]
+                fps.update()
+                g_img = cv2.cvtColor(image_to_process,cv2.COLOR_BGR2GRAY)
+                resized = cv2.resize(g_img, (IMG_SIZE , IMG_SIZE))
+                l_img = [resized]
+
+                input = np.array(l_img , dtype=np.float32).reshape(-1 , IMG_SIZE, IMG_SIZE , 1 )
+                #converting value from [0,255] to [0,1], then predict
+                input /= 255.0
+                prediction = model.predict(input)
+                ind = np.argmax(prediction)
+
+                self.change_pixmap_signal.emit(cv_img ,ind)
             else:
                 self.stop()
                 return
@@ -96,15 +110,21 @@ class Window(QMainWindow):
         predi = 'none'
         self.textLabel = QLabel(predi , self)
         self.textLabel.setAlignment(Qt.AlignCenter)
-        arabChar = 'لا شيئ'
-        self.arabicNotation = QLabel(arabChar , self)
-        self.arabicNotation.setAlignment(Qt.AlignCenter)
+        
 
         #self.phrase = QLabel(phrase_txt , self)
         self.btn_openCam = QPushButton('Open camera', self)
         self.btn_openCam.clicked.connect(self.openCamera_click)
         self.btn_openCam.setCheckable(True)
+        self.Vid_thread = VideoThread()
+            # connect its signal to the update_image slot
+        self.Vid_thread.change_pixmap_signal.connect(self.update_image)
+            # start the thread
+        self.Vid_thread.start()
 
+        arabChar = 'لا شيئ'
+        self.arabicNotation = QLabel(arabChar , self)
+        self.arabicNotation.setAlignment(Qt.AlignCenter)
         #phrase to build
         arabic_phrase = 'اهلا بك الى البرنامج'
         self.phrase_label = QLabel(arabic_phrase , self)
@@ -125,10 +145,12 @@ class Window(QMainWindow):
         vbox = QGridLayout()
         vbox.addWidget(self.title , 0,1)
         vbox.addWidget(self.image_label,1,1 )
+
         predictionLabelHlayout = QHBoxLayout()
         predictionLabelHlayout.addWidget(self.textLabel)
         predictionLabelHlayout.addWidget(self.arabicNotation)
         vbox.addLayout(predictionLabelHlayout , 2 , 1)
+
         vbox.addWidget(self.btn_openCam, 3 , 1 )
 
         phraseBtnsHLayout = QHBoxLayout()
@@ -143,16 +165,12 @@ class Window(QMainWindow):
         wid.setLayout(vbox)
         self.Vid_thread = None
 
-    @pyqtSlot(np.ndarray)
-    def update_image(self, cv_img):
-        qt_img = self.convert_cv_qt(cv2.rectangle(cv_img , (300,300) , (100,100), (0,255,0) , 0))
-        image_to_process = cv_img[100:300, 100:300]
-        fps.update()
-        index = self.predict_img(image_to_process)
+    @pyqtSlot(np.ndarray , int)
+    def update_image(self, cv_img , index):
+        cv2.rectangle(cv_img , (300,300) , (100,100), (0,255,0) , 0)
+        qt_img = self.convert_cv_qt(cv_img)    
         prediction = CATEGORIES[index]
-        #currentVal = reversedBucket[prediction]
         self.textLabel.setText(prediction)
-        #arabNot = ord(reversedBucket[prediction]).encode('ascii', 'backslashreplace').decode("utf-8")
         self.arabicNotation.setText(reversedBucket[prediction])
         self.image_label.setPixmap(qt_img)
         if not self.btn_openCam.isChecked() or self.Vid_thread is None:
@@ -161,18 +179,6 @@ class Window(QMainWindow):
             self.textLabel.setText('none')
         
 
-    def predict_img(self,image):
-        g_img = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
-        resized = imutils.resize(g_img, width=IMG_SIZE , height=IMG_SIZE)
-        l_img = [resized]
-
-        input = np.array(l_img , dtype=np.float32)
-        input = input.reshape(-1 , IMG_SIZE, IMG_SIZE , 1 )
-        #converting value from [0,255] to [0,1], then predict
-        prediction = model.predict(input/255.0)
-        ind = np.argmax(prediction)
-        #print(ind[0][0])
-        return ind
 
     
     @pyqtSlot()
@@ -192,6 +198,7 @@ class Window(QMainWindow):
             # set the image image to the grey pixmap
             self.image_label.setPixmap(self.grey)
     
+
     @pyqtSlot()
     def clear_phrase(self):
         self.phrase_label.setText('') #clear the text
