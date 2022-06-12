@@ -14,15 +14,6 @@ import arabic_reshaper
 from bidi.algorithm import get_display
 import time
 
-'''
-#Python 3
-if sys.version_info >= (3, 0):
-	from queue import Queue
-#Python 2.7
-else:
-	from Queue import Queue
-'''
-
 
 #Tensorflow utils
 ROOT_DIR =os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
