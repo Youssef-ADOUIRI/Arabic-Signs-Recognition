@@ -7,17 +7,15 @@ import cv2
 import numpy as np
 import os
 from tensorflow.keras import models
-import imutils
 from imutils.video import FPS
-from threading import Thread
-import arabic_reshaper
-from bidi.algorithm import get_display
-import time
 
+
+MODEL_NAME = 'my_model_resNet50.h5'
+INPUT_CHANNELS = 3
 
 #Tensorflow utils
 ROOT_DIR =os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-path = os.path.join( ROOT_DIR , 'saved_model/ARS_REC_model_gray_v3.h5') 
+path = os.path.join( ROOT_DIR , 'saved_model/' + MODEL_NAME) 
 model = models.load_model(path)
 IMG_SIZE = 64
 CATEGORIES = ['ain', 'al', 'aleff', 'bb', 'dal', 'dha', 'dhad', 'fa', 
@@ -64,11 +62,11 @@ class VideoThread(QThread):
         
                 image_to_process = cv_img[100:300, 100:300]
                 fps.update()
-                g_img = cv2.cvtColor(image_to_process,cv2.COLOR_BGR2GRAY)
-                resized = cv2.resize(g_img, (IMG_SIZE , IMG_SIZE))
+                if (INPUT_CHANNELS != 3):
+                    image_to_process = cv2.cvtColor(image_to_process,cv2.COLOR_BGR2GRAY)
+                resized = cv2.resize(image_to_process, (IMG_SIZE , IMG_SIZE))
                 l_img = [resized]
-
-                input = np.array(l_img , dtype=np.float32).reshape(-1 , IMG_SIZE, IMG_SIZE , 1 )
+                input = np.array(l_img , dtype=np.float32).reshape(-1 , IMG_SIZE, IMG_SIZE , INPUT_CHANNELS )
                 #converting value from [0,255] to [0,1], then predict
                 input /= 255.0
                 prediction = model.predict(input)
