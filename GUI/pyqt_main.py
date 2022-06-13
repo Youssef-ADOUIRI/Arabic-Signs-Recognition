@@ -10,8 +10,8 @@ from tensorflow.keras import models
 from imutils.video import FPS
 
 
-MODEL_NAME = 'my_model_resNet50.h5'
-INPUT_CHANNELS = 3
+MODEL_NAME = 'ARS_REC_model_gray_v3.h5'
+INPUT_CHANNELS = 1
 
 #Tensorflow utils
 ROOT_DIR =os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -103,6 +103,7 @@ class Window(QMainWindow):
         # create the label that holds the image
         self.image_label = QLabel(self)
         self.image_label.resize(self.display_width, self.display_height)
+        self.image_label.setFixedWidth(self.display_width)
         self.image_label.setPixmap(self.grey)
         # create a text label
         predi = 'none'
@@ -114,11 +115,7 @@ class Window(QMainWindow):
         self.btn_openCam = QPushButton('Open camera', self)
         self.btn_openCam.clicked.connect(self.openCamera_click)
         self.btn_openCam.setCheckable(True)
-        self.Vid_thread = VideoThread()
-            # connect its signal to the update_image slot
-        self.Vid_thread.change_pixmap_signal.connect(self.update_image)
-            # start the thread
-        self.Vid_thread.start()
+
 
         arabChar = 'لا شيئ'
         self.arabicNotation = QLabel(arabChar , self)
@@ -136,7 +133,6 @@ class Window(QMainWindow):
         self.btn_constract = QPushButton('Clear' , self)
         self.btn_constract.clicked.connect(self.clear_phrase)
 
-        self.toggle_1 = Toggle()
         # create a vertical box layout and add the labels
         wid = QWidget(self)
         self.setCentralWidget(wid)
