@@ -13,6 +13,8 @@ from imutils.video import FPS
 MODEL_NAME = 'ARS_REC_model_gray_v3.h5'
 INPUT_CHANNELS = 1
 
+
+
 #Tensorflow utils
 ROOT_DIR =os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 path = os.path.join( ROOT_DIR , 'saved_model/' + MODEL_NAME) 
@@ -104,6 +106,7 @@ class Window(QMainWindow):
         self.image_label = QLabel(self)
         self.image_label.resize(self.display_width, self.display_height)
         self.image_label.setFixedWidth(self.display_width)
+        self.image_label.setAlignment(Qt.AlignCenter)
         self.image_label.setPixmap(self.grey)
         # create a text label
         predi = 'none'
@@ -132,6 +135,11 @@ class Window(QMainWindow):
         #Clear
         self.btn_constract = QPushButton('Clear' , self)
         self.btn_constract.clicked.connect(self.clear_phrase)
+        #Mode nuit
+        self.DarkMode = Toggle()
+        self.DarkMode.setFixedWidth(120)
+        self.DarkMode.toggled.connect(self.handle_DarkMode)
+        self.isDark = False
 
         # create a vertical box layout and add the labels
         wid = QWidget(self)
@@ -154,10 +162,47 @@ class Window(QMainWindow):
         vbox.addLayout(phraseBtnsHLayout , 4, 1 )
         
         vbox.addWidget(self.phrase_label , 5 , 1)
+
+        vbox.addWidget(self.DarkMode , 6 ,1)
         
         # set the vbox layout as the widgets layout
         wid.setLayout(vbox)
         self.Vid_thread = None
+        self.qss = """
+        QWidget{
+            margin: 6px;
+            padding: 0;
+        }
+        *{
+            background-color: #202020 ;
+        }
+        QLabel{
+            color: #FFFFFF;
+        }
+        QPushButton{
+            color: #FFDF6C;
+            background-color:#707070;
+            padding: 6px
+        }
+        """
+        self.qss2 = """
+        QWidget{
+            margin: 6px;
+            padding: 0;
+        }
+        *{
+            background-color: #313131 ;
+        }
+        QLabel{
+            color: #FFFFFF;
+        }
+        QPushButton{
+            color: #FFDF6C;
+            background-color:#707070;
+            padding: 6px
+        }
+        """
+        
 
     @pyqtSlot(np.ndarray , int)
     def update_image(self, cv_img , index):
@@ -202,7 +247,13 @@ class Window(QMainWindow):
         if 'لا شيئ' != self.arabicNotation.text() :
             self.phrase_label.setText(self.phrase_label.text() + self.arabicNotation.text())
 
-        
+    def handle_DarkMode(self ,state):
+        if ( state ) :
+            self.setStyleSheet(self.qss)
+            self.isDark = True
+        else:
+            self.setStyleSheet(self.qss2)
+            self.isDark = False
     
     def convert_cv_qt(self, cv_img):
         rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
@@ -230,27 +281,11 @@ if __name__ == "__main__":
     # start the app
     App = QApplication(sys.argv)
     
-    qss = """
-        QWidget{
-            margin: 6px;
-            padding: 0;
-        }
-        *{
-            background-color: #202020 ;
-        }
-        QLabel{
-            color: #FFFFFF;
-        }
-        QPushButton{
-            color: #FFDF6C;
-            background-color:#707070;
-            padding: 6px
-        }
-    """
+   
     #494D5F
     # create the instance of our Window
     window = Window()
-    window.setStyleSheet(qss)
+    window.setStyleSheet(window.qss)
     window.arabicNotation.setStyleSheet("text-align: center;font-size: 30px;")
     window.textLabel.setStyleSheet("text-align: center;font-size: 30px;")
     window.title.setStyleSheet("text-align: center;font-size: 40px; color:#FFDF6C")
