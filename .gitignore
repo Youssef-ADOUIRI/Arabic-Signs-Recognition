@@ -1,3 +1,4 @@
 /data
 /.vscode
-/saved_model/my_model_resNet50.h5
+/saved_model
+/web-app.rar
