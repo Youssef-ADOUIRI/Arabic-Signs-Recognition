@@ -1,9 +1,9 @@
 # Arabic-Signs-Recognition
-This project is a website and desktop application for arabic hand sign language recognition.
+This project is a desktop application for arabic hand sign language recognition.
 
-You can dowloand the complete project, or only [GUI, saved_model] folders for the desktop app, or [web_app, saved_model] folders for the reactjs+flaskAPI project.
+You can dowloand the complete project, or only [GUI, saved_model] folders for the desktop app, or [web_app, saved_model] in diffrent repostory for the reactjs+flaskAPI project.
 
-For direct opencv/console test for the tensorflow model you can use the cv2_test.py script.
+For direct opencv/console test for the tensorflow model you can run the cv2_test.py script.
 
 
 
@@ -24,6 +24,7 @@ Here is the heatmap of the confusion matrix foreach letter :
 
 
 ## Web page
+more info in ...
 In the web-page folder, the app is developped with :
 Reactjs for frontend and backend using flask api to predict images from opencv camera
 
