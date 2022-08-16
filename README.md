@@ -1,7 +1,7 @@
 # Arabic-Signs-Recognition
 This project is a desktop application for arabic hand sign language recognition.
 
-You can dowloand the complete project, or only [GUI, saved_model] folders for the desktop app, or [web_app, saved_model] in diffrent repostory for the reactjs+flaskAPI project.
+You can dowloand the complete project, or only [GUI, saved_model] folders for the desktop app.
 
 For direct opencv/console test for the tensorflow model you can run the cv2_test.py script.
 
